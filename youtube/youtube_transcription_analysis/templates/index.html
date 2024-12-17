@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Transcription and Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            margin-top: 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #5c6bc0;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #3f51b5;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Обработка видео с YouTube</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Video Download Section -->
+        <div class="section">
+            <h2>Загрузить видео</h2>
+            <input type="text" id="url" placeholder="Введите ссылку на YouTube">
+            <button onclick="downloadVideo()">Загрузить</button>
+            <p id="output"></p>
+        </div>
+
+        <!-- Transcription Section -->
+        <div class="section">
+            <h2>Транскрипция</h2>
+            <button onclick="transcribeAudio()">Транскрибировать</button>
+        </div>
+
+        <!-- Analysis Section -->
+        <div class="section">
+            <h2>Анализ</h2>
+            <button onclick="analyzeText()">Анализировать</button>
+        </div>
+    </div>
+
+    <script>
+        let filePath = '';
+
+        async function downloadVideo() {
+            const url = document.getElementById('url').value;
+            const response = await axios.post('/download', { url });
+            if (response.data.path) {
+                filePath = response.data.path;
+                document.getElementById('output').innerText = 'Видео загружено: ' + filePath;
+            } else {
+                document.getElementById('output').innerText = response.data.error || 'Ошибка';
+            }
+        }
+
+        async function transcribeAudio() {
+            if (!filePath) {
+                document.getElementById('output').innerText = 'Сначала загрузите видео!';
+                return;
+            }
+            const response = await axios.post('/transcribe', { file_path: filePath });
+            if (response.data.transcription) {
+                document.getElementById('output').innerText = 'Транскрипция: ' + response.data.transcription;
+            } else {
+                document.getElementById('output').innerText = response.data.error || 'Ошибка';
+            }
+        }
+
+        async function analyzeText() {
+            const transcription = document.getElementById('output').innerText.replace('Транскрипция: ', '');
+            if (!transcription) {
+                document.getElementById('output').innerText = 'Сначала выполните транскрипцию!';
+                return;
+            }
+            const response = await axios.post('/analyze', { transcription });
+            if (response.data.analysis) {
+                document.getElementById('output').innerText = 'Анализ: ' + response.data.analysis;
+            } else {
+                document.getElementById('output').innerText = response.data.error || 'Ошибка';
+            }
+        }
+    </script>
+</body>
+</html>
