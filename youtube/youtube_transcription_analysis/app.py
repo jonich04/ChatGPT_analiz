@@ -110,7 +110,7 @@ AudioSegment.ffmpeg = which("ffmpeg")
 def index():
     return render_template('index.html')
 
-@app.route('/download', methods=['POST'])
+@app.routea('/download', methods=['POST'])
 def download_video():
     data = request.json
     url = data.get("url")
